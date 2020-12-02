@@ -1,53 +1,59 @@
 use std::fs;
 
+#[macro_use]
+extern crate lazy_static;
+
 use anyhow::Result;
 use regex::Regex;
 
-fn count_range_valid(input: &str) -> Result<usize> {
-    let re = Regex::new(r"^(\d+)\-(\d+) (\w): (\w+)$")?;
-
-    let mut total = 0;
-
-    for line in input.lines() {
-        let cap = re.captures(line).unwrap();
-
-        let count = &cap[4].matches(&cap[3]).count();
-
-        if count >= &cap[1].parse::<usize>()? && count <= &cap[2].parse::<usize>()? {
-            total += 1;
-        }
-    }
-
-    Ok(total)
+struct Password {
+    low: usize,
+    high: usize,
+    char: String,
+    password: String,
 }
 
-fn count_position_valid(input: &str) -> Result<usize> {
-    let re = Regex::new(r"^(\d+)\-(\d+) (\w): (\w+)$")?;
+impl From<&str> for Password {
+    fn from(string: &str) -> Self {
+        lazy_static! {
+            static ref RE: Regex = Regex::new(r"^(\d+)\-(\d+) (\w): (\w+)$").unwrap();
+        }
 
-    let mut total = 0;
+        let cap = RE.captures(string).unwrap();
 
-    for line in input.lines() {
-        let cap = re.captures(line).unwrap();
-
-        let low = &cap[1].parse::<usize>()? - 1;
-        let high = &cap[2].parse::<usize>()? - 1;
-        let char = &cap[3];
-        let password = &cap[4];
-
-        // xor - i.e. one or other but not both
-        if (&password[low..low + 1] == char) ^ (&password[high..high + 1] == char) {
-            total += 1;
+        Password {
+            low: (&cap[1]).parse().unwrap(),
+            high: (&cap[2]).parse().unwrap(),
+            char: (&cap[3]).into(),
+            password: (&cap[4]).into(),
         }
     }
+}
 
-    Ok(total)
+fn valid_range(password: &Password) -> bool {
+    let count = password.password.matches(&password.char).count();
+
+    count >= password.low && count <= password.high
+}
+
+fn valid_position(password: &Password) -> bool {
+    let p = password;
+    // xor - i.e. one or other but not both
+    (&p.password[(p.low - 1)..p.low] == p.char) ^ (&p.password[(p.high - 1)..p.high] == p.char)
+}
+
+fn count_valid<F>(input: &str, validator: F) -> usize
+where
+    F: Fn(&Password) -> bool,
+{
+    input.lines().map(Password::from).filter(validator).count()
 }
 
 fn main() -> Result<()> {
     let input = fs::read_to_string("../inputs/day02.txt")?;
 
-    let part1 = count_range_valid(&input)?;
-    let part2 = count_position_valid(&input)?;
+    let part1 = count_valid(&input, valid_range);
+    let part2 = count_valid(&input, valid_position);
 
     println!("{}", part1);
     println!("{}", part2);
@@ -61,12 +67,12 @@ mod test {
     #[test]
     fn test_count_range_valid() {
         let input = "1-3 a: abcde\n1-3 b: cdefg\n2-9 c: ccccccccc";
-        assert!(count_range_valid(input).unwrap() == 2);
+        assert!(count_valid(input, valid_range) == 2);
     }
 
     #[test]
     fn test_count_position_valid() {
         let input = "1-3 a: abcde\n1-3 b: cdefg\n2-9 c: ccccccccc";
-        assert!(count_position_valid(input).unwrap() == 1);
+        assert!(count_valid(input, valid_position) == 1);
     }
 }
