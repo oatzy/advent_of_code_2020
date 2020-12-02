@@ -1,4 +1,5 @@
 use std::fs;
+use std::collections::HashSet;
 
 fn part1(report: &Vec<usize>) -> usize {
     for i in 0..report.len() {
@@ -11,6 +12,19 @@ fn part1(report: &Vec<usize>) -> usize {
         }
     }
     panic!("no match found");
+}
+
+fn part1_alt(path: &str) -> usize {
+    let mut seen: HashSet<usize> = HashSet::new();
+
+    for x in fs::read_to_string(path).unwrap().lines().map(|x| x.parse::<usize>().unwrap()) {
+        let y = 2020 - x;
+        if seen.contains(&y) {
+            return x * y;
+        }
+        seen.insert(x);
+    }
+    unreachable!("no match found");
 }
 
 fn part2(report: &Vec<usize>) -> usize {
@@ -42,4 +56,6 @@ fn main() {
 
     println!("{}", part1(&input));
     println!("{}", part2(&input));
+
+    //println!("{}", part1_alt("../inputs/day01.txt"));
 }
