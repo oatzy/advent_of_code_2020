@@ -3,13 +3,7 @@ use std::fs;
 
 use anyhow::Result;
 
-static PATHS: [(usize, usize); 5] = [
-    (1, 1),
-    (3, 1),
-    (5, 1),
-    (7, 1),
-    (1, 2),
-];
+static PATHS: [(usize, usize); 5] = [(1, 1), (3, 1), (5, 1), (7, 1), (1, 2)];
 
 struct Map {
     trees: HashSet<(usize, usize)>,
@@ -57,13 +51,10 @@ fn trees_in_path(map: &Map, right: usize, down: usize) -> usize {
 }
 
 fn product_of_paths(map: &Map) -> usize {
-    let mut product = 1;
-
-    for (right, down) in PATHS.iter() {
-        product *= trees_in_path(&map, *right, *down);
-    }
-
-    product
+    PATHS
+        .iter()
+        .map(|(right, down)| trees_in_path(&map, *right, *down))
+        .product()
 }
 
 fn main() -> Result<()> {
@@ -82,7 +73,6 @@ fn main() -> Result<()> {
 mod test {
 
     use super::*;
-    use std::fs;
 
     #[test]
     fn test_part1() {
