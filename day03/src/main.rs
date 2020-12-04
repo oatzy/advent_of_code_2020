@@ -80,7 +80,7 @@ mod test {
         let map = parse_map(&input);
 
         let trees = trees_in_path(&map, 3, 1);
-        assert!(trees == 7);
+        assert_eq!(trees, 7);
     }
 
     #[test]
@@ -89,6 +89,6 @@ mod test {
         let map = parse_map(&input);
 
         let result = product_of_paths(&map);
-        assert!(result == 336);
+        assert_eq!(result, 336);
     }
 }

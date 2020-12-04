@@ -67,12 +67,12 @@ mod test {
     #[test]
     fn test_count_range_valid() {
         let input = "1-3 a: abcde\n1-3 b: cdefg\n2-9 c: ccccccccc";
-        assert!(count_valid(input, valid_range) == 2);
+        assert_eq!(count_valid(input, valid_range), 2);
     }
 
     #[test]
     fn test_count_position_valid() {
         let input = "1-3 a: abcde\n1-3 b: cdefg\n2-9 c: ccccccccc";
-        assert!(count_valid(input, valid_position) == 1);
+        assert_eq!(count_valid(input, valid_position), 1);
     }
 }

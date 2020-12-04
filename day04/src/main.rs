@@ -138,19 +138,19 @@ mod test {
     #[test]
     fn test_part1() {
         let input = fs::read_to_string("../inputs/day04-test.txt").unwrap();
-        assert!(part1(&input) == 2);
+        assert_eq!(part1(&input), 2);
     }
 
     #[test]
     fn test_parse_valid() {
         let input = fs::read_to_string("../inputs/day04-test-valid.txt").unwrap();
-        assert!(part2(&input) == 4);
+        assert_eq!(part2(&input), 4);
     }
 
     #[test]
     fn test_part2_invalid() {
         let input = fs::read_to_string("../inputs/day04-test-invalid.txt").unwrap();
-        assert!(part2(&input) == 0);
+        assert_eq!(part2(&input), 0);
     }
 
     #[test]
