@@ -1,1 +1,0 @@
-print(reduce(lambda (l, w, t), (i, c): (l+1 if c == '\n' else l,i if c == '\n' and not w else w, t+1 if c == '#' and (i == 0 or w != 0 and i == l*(w+1)+(3*l%w)) else t), enumerate(open("../inputs/day03.txt").read()), (0,0,0))[2])
