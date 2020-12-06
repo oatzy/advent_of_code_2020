@@ -1,0 +1,1 @@
+print(sum(len(set(group.replace('\n', ''))) for group in open('../inputs/day06.txt').read().split('\n\n')))
