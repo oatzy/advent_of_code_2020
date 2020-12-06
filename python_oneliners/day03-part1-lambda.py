@@ -1,0 +1,1 @@
+print((lambda map: (lambda map, h, w: sum(map[y][3*y%w] == '#' for y in range(h)))(map, len(map), len(map[0])))(open("../inputs/day03.txt").read().splitlines()))
