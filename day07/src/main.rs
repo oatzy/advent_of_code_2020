@@ -50,20 +50,14 @@ fn count_contains(rules: &Rules, target: &str) -> usize {
     seen.len()
 }
 
-fn _count_children(rules: &Rules, colour: &str) -> usize {
+fn count_children(rules: &Rules, colour: &str) -> usize {
     rules
         .get(colour)
         .unwrap()
         .iter()
-        .map(|(c, n)| c * _count_children(rules, n))
-        .sum::<usize>()
         // + 1 for the bag itself
-        + 1
-}
-
-fn count_children(rules: &Rules, colour: &str) -> usize {
-    // -1 because we don't want to include the outer bag
-    _count_children(rules, colour) - 1
+        .map(|(c, n)| c * (count_children(rules, n) + 1))
+        .sum::<usize>()
 }
 
 fn main() {
