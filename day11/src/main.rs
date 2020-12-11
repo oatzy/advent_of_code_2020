@@ -54,16 +54,14 @@ impl P {
 }
 
 struct AdjacentIter {
-    dx: isize,
-    dy: isize,
+    inx: usize,
     p: (isize, isize),
 }
 
 impl From<&P> for AdjacentIter {
     fn from(item: &P) -> Self {
         AdjacentIter {
-            dx: -1,
-            dy: -1,
+            inx: 0,
             p: (item.0 as isize, item.1 as isize),
         }
     }
@@ -73,29 +71,19 @@ impl Iterator for AdjacentIter {
     type Item = P;
 
     fn next(&mut self) -> Option<Self::Item> {
-        if self.dy > 1 {
-            return None;
-        }
-        if self.p.0 + self.dx < 0 {
-            self.dx += 1
-        }
-        if self.p.1 + self.dy < 0 {
-            self.dy += 1
-        }
-        if self.dx == 0 && self.dy == 0 {
-            self.dx += 1
+        while self.inx < 8 {
+            let step = STEPS[self.inx];
+            self.inx += 1;
+
+            let x = self.p.0 + step.0;
+            let y = self.p.1 + step.1;
+
+            if x >= 0 && y >= 0 {
+                return Some(P(x as usize, y as usize));
+            }
         }
 
-        let x = self.p.0 + self.dx;
-        let y = self.p.1 + self.dy;
-
-        self.dx += 1;
-        if self.dx > 1 {
-            self.dx = -1;
-            self.dy += 1;
-        }
-
-        Some(P(x as usize, y as usize))
+        None
     }
 }
 
@@ -267,18 +255,18 @@ mod test {
     fn test_adjacent() {
         assert_eq!(
             P(0, 0).adjacent().collect::<Vec<P>>(),
-            vec![P(1, 0), P(0, 1), P(1, 1)]
+            vec![P(0, 1), P(1, 0), P(1, 1)]
         );
         assert_eq!(
             P(2, 2).adjacent().collect::<Vec<P>>(),
             vec![
                 P(1, 1),
-                P(2, 1),
-                P(3, 1),
                 P(1, 2),
-                P(3, 2),
                 P(1, 3),
+                P(2, 1),
                 P(2, 3),
+                P(3, 1),
+                P(3, 2),
                 P(3, 3)
             ]
         );
