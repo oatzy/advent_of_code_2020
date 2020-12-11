@@ -27,7 +27,7 @@ impl SeatMap {
     fn first_in_path(&self, origin: P, step: &(isize, isize)) -> Seat {
         let (mut x, mut y) = (origin.0 as isize + step.0, origin.1 as isize + step.1);
 
-        while x >= 0 && y >= 0 && x <= self.width as isize && y <= self.height as isize {
+        while x >= 0 && y >= 0 && x < self.width as isize && y < self.height as isize {
             let p = P(x as usize, y as usize);
             if self.seats.contains_key(&p) {
                 return *self.seats.get(&p).unwrap();
@@ -105,7 +105,7 @@ fn read_seats(input: &str) -> SeatMap {
                 c => unreachable!("Got unexpected char {}", c),
             };
         }
-        height = y;
+        height = y + 1;
     }
 
     SeatMap {
