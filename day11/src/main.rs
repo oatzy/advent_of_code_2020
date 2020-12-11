@@ -1,6 +1,8 @@
 use std::collections::HashMap;
 use std::fs;
 
+use rayon::prelude::*;
+
 static STEPS: [(isize, isize); 8] = [
     (-1, -1),
     (-1, 0),
@@ -115,7 +117,7 @@ fn read_seats(input: &str) -> SeatMap {
 
 fn iterate_adjacent(seats: &Seats) -> Seats {
     seats
-        .iter()
+        .par_iter()
         .map(|(&p, seat)| {
             let occupied = p
                 .adjacent()
@@ -148,7 +150,7 @@ fn iterate_adjacent(seats: &Seats) -> Seats {
 fn iterate_path(seats: &SeatMap) -> SeatMap {
     let new = seats
         .seats
-        .iter()
+        .par_iter()
         .map(|(&p, seat)| {
             let occupied = STEPS
                 .iter()
