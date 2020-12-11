@@ -13,18 +13,54 @@ enum Seat {
 struct P(usize, usize);
 
 impl P {
-    fn adjacent(&self) -> Vec<P> {
-        let mut adjacent = Vec::new();
-        for x in -1..=1 {
-            for y in -1..=1 {
-                let (a, b) = (self.0 as isize + x, self.1 as isize + y);
-                if a < 0 || b < 0 || (a == self.0 as isize && b == self.1 as isize) {
-                    continue;
-                }
-                adjacent.push(P(a as usize, b as usize));
-            }
+    fn adjacent(&self) -> AdjacentIter {
+        self.into()
+    }
+}
+
+struct AdjacentIter {
+    dx: isize,
+    dy: isize,
+    p: (isize, isize),
+}
+
+impl From<&P> for AdjacentIter {
+    fn from(item: &P) -> Self {
+        AdjacentIter {
+            dx: -1,
+            dy: -1,
+            p: (item.0 as isize, item.1 as isize),
         }
-        adjacent
+    }
+}
+
+impl Iterator for AdjacentIter {
+    type Item = P;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.dy > 1 {
+            return None;
+        }
+        if self.p.0 + self.dx < 0 {
+            self.dx += 1
+        }
+        if self.p.1 + self.dy < 0 {
+            self.dy += 1
+        }
+        if self.dx == 0 && self.dy == 0 {
+            self.dx += 1
+        }
+
+        let x = self.p.0 + self.dx;
+        let y = self.p.1 + self.dy;
+
+        self.dx += 1;
+        if self.dx > 1 {
+            self.dx = -1;
+            self.dy += 1;
+        }
+
+        Some(P(x as usize, y as usize))
     }
 }
 
@@ -52,7 +88,6 @@ fn iterate(seats: &Seats) -> Seats {
         .map(|(&p, seat)| {
             let occupied = p
                 .adjacent()
-                .iter()
                 .filter(|x| seats.get(x) == Some(&Seat::Occupied))
                 .count();
 
@@ -118,17 +153,20 @@ mod test {
 
     #[test]
     fn test_adjacent() {
-        assert_eq!(P(0, 0).adjacent(), vec![P(0, 1), P(1, 0), P(1, 1)]);
         assert_eq!(
-            P(2, 2).adjacent(),
+            P(0, 0).adjacent().collect::<Vec<P>>(),
+            vec![P(1, 0), P(0, 1), P(1, 1)]
+        );
+        assert_eq!(
+            P(2, 2).adjacent().collect::<Vec<P>>(),
             vec![
                 P(1, 1),
-                P(1, 2),
-                P(1, 3),
                 P(2, 1),
-                P(2, 3),
                 P(3, 1),
+                P(1, 2),
                 P(3, 2),
+                P(1, 3),
+                P(2, 3),
                 P(3, 3)
             ]
         );
