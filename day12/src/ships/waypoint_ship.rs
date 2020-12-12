@@ -1,3 +1,6 @@
+use crate::Error;
+use anyhow::Result;
+
 struct WayPoint {
     east: isize,
     north: isize,
@@ -34,7 +37,7 @@ impl WayPointShip {
         self.wp.east -= step as isize;
     }
 
-    fn left(&mut self, degrees: usize) {
+    fn left(&mut self, degrees: usize) -> Result<()> {
         self.wp = match degrees {
             90 => WayPoint {
                 north: self.wp.east,
@@ -48,11 +51,12 @@ impl WayPointShip {
                 north: -self.wp.east,
                 east: self.wp.north,
             },
-            _ => panic!("unexpected left rotation {}", degrees),
-        }
+            _ => return Err(Error::UnsupportedRotation(degrees).into()),
+        };
+        Ok(())
     }
 
-    fn right(&mut self, degrees: usize) {
+    fn right(&mut self, degrees: usize) -> Result<()> {
         self.wp = match degrees {
             270 => WayPoint {
                 north: self.wp.east,
@@ -66,8 +70,9 @@ impl WayPointShip {
                 north: -self.wp.east,
                 east: self.wp.north,
             },
-            _ => panic!("unexpected left rotation {}", degrees),
-        }
+            _ => return Err(Error::UnsupportedRotation(degrees).into()),
+        };
+        Ok(())
     }
 
     fn forward(&mut self, step: usize) {
@@ -79,20 +84,22 @@ impl WayPointShip {
         (self.east.abs() + self.north.abs()) as usize
     }
 
-    pub fn move_from_instructions(&mut self, instructions: &str) {
+    pub fn move_from_instructions(&mut self, instructions: &str) -> Result<()> {
         for i in instructions.lines() {
-            let size: usize = (&i[1..]).parse().unwrap();
+            let size: usize = (&i[1..]).parse()?;
 
             match &i[..1] {
                 "N" => self.north(size),
                 "S" => self.south(size),
                 "E" => self.east(size),
                 "W" => self.west(size),
-                "L" => self.left(size),
-                "R" => self.right(size),
+                "L" => self.left(size)?,
+                "R" => self.right(size)?,
                 "F" => self.forward(size),
-                _ => panic!("got unexpected instruction {}", i),
+                _ => return Err(Error::InvalidInstruction(i.to_owned()).into()),
             }
         }
+
+        Ok(())
     }
 }

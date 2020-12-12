@@ -1,3 +1,6 @@
+use crate::Error;
+use anyhow::Result;
+
 #[derive(Copy, Clone)]
 enum Facing {
     North,
@@ -37,24 +40,26 @@ impl FacingShip {
         self.east -= step as isize;
     }
 
-    fn left(&mut self, degrees: usize) {
+    fn left(&mut self, degrees: usize) -> Result<()> {
         self.facing = match (self.facing, degrees) {
             (Facing::North, 90) | (Facing::South, 270) | (Facing::East, 180) => Facing::West,
             (Facing::North, 180) | (Facing::West, 90) | (Facing::East, 270) => Facing::South,
             (Facing::North, 270) | (Facing::West, 180) | (Facing::South, 90) => Facing::East,
             (Facing::West, 270) | (Facing::South, 180) | (Facing::East, 90) => Facing::North,
-            _ => panic!("Unexpected left rotation {}", degrees),
+            _ => return Err(Error::UnsupportedRotation(degrees).into()),
         };
+        Ok(())
     }
 
-    fn right(&mut self, degrees: usize) {
+    fn right(&mut self, degrees: usize) -> Result<()> {
         self.facing = match (self.facing, degrees) {
             (Facing::North, 270) | (Facing::South, 90) | (Facing::East, 180) => Facing::West,
             (Facing::North, 180) | (Facing::West, 270) | (Facing::East, 90) => Facing::South,
             (Facing::North, 90) | (Facing::West, 180) | (Facing::South, 270) => Facing::East,
             (Facing::West, 90) | (Facing::South, 180) | (Facing::East, 270) => Facing::North,
-            _ => panic!("Unexpected right rotation {}", degrees),
+            _ => return Err(Error::UnsupportedRotation(degrees).into()),
         };
+        Ok(())
     }
 
     fn forward(&mut self, step: usize) {
@@ -70,20 +75,21 @@ impl FacingShip {
         (self.east.abs() + self.north.abs()) as usize
     }
 
-    pub fn move_from_instructions(&mut self, instructions: &str) {
+    pub fn move_from_instructions(&mut self, instructions: &str) -> Result<()> {
         for i in instructions.lines() {
-            let size: usize = (&i[1..]).parse().unwrap();
+            let size: usize = (&i[1..]).parse()?;
 
             match &i[..1] {
                 "N" => self.north(size),
                 "S" => self.south(size),
                 "E" => self.east(size),
                 "W" => self.west(size),
-                "L" => self.left(size),
-                "R" => self.right(size),
+                "L" => self.left(size)?,
+                "R" => self.right(size)?,
                 "F" => self.forward(size),
-                _ => panic!("got unexpected instruction {}", i),
+                _ => return Err(Error::InvalidInstruction(i.to_owned()).into()),
             }
         }
+        Ok(())
     }
 }
