@@ -1,3 +1,4 @@
+use crate::ships::traits::Ship;
 use crate::Error;
 use anyhow::Result;
 
@@ -21,6 +22,12 @@ impl WayPointShip {
         }
     }
 
+    pub fn distance(&self) -> usize {
+        (self.east.abs() + self.north.abs()) as usize
+    }
+}
+
+impl Ship for WayPointShip {
     fn north(&mut self, step: usize) {
         self.wp.north += step as isize;
     }
@@ -78,28 +85,5 @@ impl WayPointShip {
     fn forward(&mut self, step: usize) {
         self.east += self.wp.east * step as isize;
         self.north += self.wp.north * step as isize;
-    }
-
-    pub fn distance(&self) -> usize {
-        (self.east.abs() + self.north.abs()) as usize
-    }
-
-    pub fn move_from_instructions(&mut self, instructions: &str) -> Result<()> {
-        for i in instructions.lines() {
-            let size: usize = (&i[1..]).parse()?;
-
-            match &i[..1] {
-                "N" => self.north(size),
-                "S" => self.south(size),
-                "E" => self.east(size),
-                "W" => self.west(size),
-                "L" => self.left(size)?,
-                "R" => self.right(size)?,
-                "F" => self.forward(size),
-                _ => return Err(Error::InvalidInstruction(i.to_owned()).into()),
-            }
-        }
-
-        Ok(())
     }
 }

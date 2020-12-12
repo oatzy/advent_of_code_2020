@@ -5,7 +5,7 @@ use thiserror::Error;
 
 mod ships;
 
-use ships::{FacingShip, WayPointShip};
+use ships::{move_from_instructions, FacingShip, WayPointShip};
 
 #[derive(Error, Debug)]
 pub enum Error {
@@ -19,11 +19,11 @@ fn main() -> anyhow::Result<()> {
     let input = fs::read_to_string("../inputs/day12.txt")?;
 
     let mut ship = FacingShip::new();
-    ship.move_from_instructions(&input)?;
+    move_from_instructions(&mut ship, &input)?;
     println!("{}", ship.distance());
 
     let mut ship = WayPointShip::new();
-    ship.move_from_instructions(&input)?;
+    move_from_instructions(&mut ship, &input)?;
     println!("{}", ship.distance());
 
     Ok(())
@@ -37,7 +37,7 @@ mod test {
         let input = fs::read_to_string("../inputs/day12-test.txt").unwrap();
 
         let mut ship = FacingShip::new();
-        ship.move_from_instructions(&input).unwrap();
+        move_from_instructions(&mut ship, &input).unwrap();
 
         assert_eq!(ship.distance(), 25);
     }
@@ -47,7 +47,7 @@ mod test {
         let input = fs::read_to_string("../inputs/day12-test.txt").unwrap();
 
         let mut ship = WayPointShip::new();
-        ship.move_from_instructions(&input).unwrap();
+        move_from_instructions(&mut ship, &input).unwrap();
 
         assert_eq!(ship.distance(), 286);
     }

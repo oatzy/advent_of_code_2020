@@ -1,4 +1,6 @@
+use crate::ships::traits::Ship;
 use crate::Error;
+
 use anyhow::Result;
 
 #[derive(Copy, Clone)]
@@ -24,6 +26,12 @@ impl FacingShip {
         }
     }
 
+    pub fn distance(&self) -> usize {
+        (self.east.abs() + self.north.abs()) as usize
+    }
+}
+
+impl Ship for FacingShip {
     fn north(&mut self, step: usize) {
         self.north += step as isize;
     }
@@ -69,27 +77,5 @@ impl FacingShip {
             Facing::East => self.east += step as isize,
             Facing::West => self.east -= step as isize,
         }
-    }
-
-    pub fn distance(&self) -> usize {
-        (self.east.abs() + self.north.abs()) as usize
-    }
-
-    pub fn move_from_instructions(&mut self, instructions: &str) -> Result<()> {
-        for i in instructions.lines() {
-            let size: usize = (&i[1..]).parse()?;
-
-            match &i[..1] {
-                "N" => self.north(size),
-                "S" => self.south(size),
-                "E" => self.east(size),
-                "W" => self.west(size),
-                "L" => self.left(size)?,
-                "R" => self.right(size)?,
-                "F" => self.forward(size),
-                _ => return Err(Error::InvalidInstruction(i.to_owned()).into()),
-            }
-        }
-        Ok(())
     }
 }
