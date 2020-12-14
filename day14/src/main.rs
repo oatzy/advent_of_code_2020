@@ -23,6 +23,64 @@ impl Decoder {
     }
 }
 
+// struct VariantIter {
+//     head: Vec<String>,
+//     tail: Option<Box<VariantIter>>,
+//     inx: usize,
+// }
+
+// impl VariantIter {
+//     fn new(s: String) -> Self {
+//         if s.len() == 0 {
+//             panic!("Got empty string");
+//         }
+//         let head = &s[..1];
+//         let head = if head != "X" {
+//             vec![head.to_string()]
+//         } else {
+//             vec!["0".to_string(), "1".to_string()]
+//         };
+//         let tail = if s[1..].len() == 0 {
+//             None
+//         } else {
+//             Some(Box::new(VariantIter::new(s[1..].to_string())))
+//         };
+//         Self {
+//             head: head,
+//             tail: tail,
+//             inx: 0,
+//         }
+//     }
+// }
+
+// impl Iterator for VariantIter {
+//     type Item = String;
+
+//     fn next(&mut self) -> Option<Self::Item> {
+//         if self.inx >= self.head.len() {
+//             return None;
+//         }
+
+//         let c = self.head.get(self.inx).unwrap();
+
+//         if self.tail.is_none() {
+//             self.inx += 1;
+//             return Some(c.to_owned());
+//         }
+
+//         let t = self.tail.as_mut().unwrap().next();
+//         if t.is_none() {
+//             self.inx += 1;
+//             if self.inx >= self.head.len() {
+//                 return None;
+//             }
+//             return self.next();
+//         }
+
+//         Some(c.to_string() + &(t.unwrap()))
+//     }
+// }
+
 fn apply_mask(mask: &String, value: u64) -> u64 {
     let mut value: u64 = value;
     for (inx, c) in mask.chars().rev().enumerate().filter(|(_, c)| c != &'X') {
@@ -68,4 +126,32 @@ mod test {
 
         assert_eq!(part1(&input), 165);
     }
+
+    // #[test]
+    // fn test_variant_iter() {
+    //     assert_eq!(
+    //         VariantIter::new("0".to_string()).collect::<Vec<String>>(),
+    //         vec!["0"]
+    //     );
+
+    //     assert_eq!(
+    //         VariantIter::new("1".to_string()).collect::<Vec<String>>(),
+    //         vec!["1"]
+    //     );
+
+    //     assert_eq!(
+    //         VariantIter::new("X".to_string()).collect::<Vec<String>>(),
+    //         vec!["0", "1"]
+    //     );
+
+    //     assert_eq!(
+    //         VariantIter::new("X1".to_string()).collect::<Vec<String>>(),
+    //         vec!["01", "11"]
+    //     );
+
+    //     assert_eq!(
+    //         VariantIter::new("0X".to_string()).collect::<Vec<String>>(),
+    //         vec!["00", "01"]
+    //     );
+    // }
 }
