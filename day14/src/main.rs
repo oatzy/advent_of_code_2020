@@ -13,73 +13,21 @@ impl Decoder {
             memory: HashMap::new(),
         }
     }
-
-    fn change_mask<S: Into<String>>(&mut self, mask: S) {
-        self.mask = mask.into();
-    }
-
-    fn set(&mut self, index: u64, value: u64) {
-        self.memory.insert(index, apply_mask(&self.mask, value));
-    }
 }
 
-// struct VariantIter {
-//     head: Vec<String>,
-//     tail: Option<Box<VariantIter>>,
-//     inx: usize,
-// }
+fn set_value_v1(decoder: &mut Decoder, index: u64, value: u64) {
+    decoder
+        .memory
+        .insert(index, apply_mask(&decoder.mask, value));
+}
 
-// impl VariantIter {
-//     fn new(s: String) -> Self {
-//         if s.len() == 0 {
-//             panic!("Got empty string");
-//         }
-//         let head = &s[..1];
-//         let head = if head != "X" {
-//             vec![head.to_string()]
-//         } else {
-//             vec!["0".to_string(), "1".to_string()]
-//         };
-//         let tail = if s[1..].len() == 0 {
-//             None
-//         } else {
-//             Some(Box::new(VariantIter::new(s[1..].to_string())))
-//         };
-//         Self {
-//             head: head,
-//             tail: tail,
-//             inx: 0,
-//         }
-//     }
-// }
+fn set_value_v2(decoder: &mut Decoder, index: u64, value: u64) {
+    let index = apply_mask(&decoder.mask.replace("0", "X"), index);
 
-// impl Iterator for VariantIter {
-//     type Item = String;
-
-//     fn next(&mut self) -> Option<Self::Item> {
-//         if self.inx >= self.head.len() {
-//             return None;
-//         }
-
-//         let c = self.head.get(self.inx).unwrap();
-
-//         if self.tail.is_none() {
-//             self.inx += 1;
-//             return Some(c.to_owned());
-//         }
-
-//         let t = self.tail.as_mut().unwrap().next();
-//         if t.is_none() {
-//             self.inx += 1;
-//             if self.inx >= self.head.len() {
-//                 return None;
-//             }
-//             return self.next();
-//         }
-
-//         Some(c.to_string() + &(t.unwrap()))
-//     }
-// }
+    for inx in apply_variants(&decoder.mask, index) {
+        decoder.memory.insert(inx, value);
+    }
+}
 
 fn apply_mask(mask: &String, value: u64) -> u64 {
     let mut value: u64 = value;
@@ -93,7 +41,23 @@ fn apply_mask(mask: &String, value: u64) -> u64 {
     value
 }
 
-fn part1(input: &str) -> u64 {
+fn apply_variants(mask: &String, value: u64) -> Vec<u64> {
+    let mut values = vec![value];
+    for (inx, _) in mask.chars().rev().enumerate().filter(|(_, c)| c == &'X') {
+        let mut tmp = Vec::new();
+        for v in values {
+            tmp.push(v & !(1 << inx));
+            tmp.push(v | (1 << inx));
+        }
+        values = tmp;
+    }
+    values
+}
+
+fn execute<F>(input: &str, set_value: F) -> u64
+where
+    F: Fn(&mut Decoder, u64, u64),
+{
     let mut decoder = Decoder::new();
 
     for line in input.lines() {
@@ -102,9 +66,9 @@ fn part1(input: &str) -> u64 {
             let index: u64 = parts[0].parse().unwrap();
             let value: u64 = parts[1].parse().unwrap();
 
-            decoder.set(index, value);
+            set_value(&mut decoder, index, value);
         } else {
-            decoder.change_mask(line.split(" = ").skip(1).next().unwrap());
+            decoder.mask = line.split(" = ").skip(1).next().unwrap().into();
         }
     }
 
@@ -114,7 +78,8 @@ fn part1(input: &str) -> u64 {
 fn main() {
     let input = fs::read_to_string("../inputs/day14.txt").unwrap();
 
-    println!("{}", part1(&input));
+    println!("{}", execute(&input, set_value_v1));
+    println!("{}", execute(&input, set_value_v2));
 }
 
 mod test {
@@ -124,34 +89,13 @@ mod test {
     fn test_part1() {
         let input = fs::read_to_string("../inputs/day14-test.txt").unwrap();
 
-        assert_eq!(part1(&input), 165);
+        assert_eq!(execute(&input, set_value_v1), 165);
     }
 
-    // #[test]
-    // fn test_variant_iter() {
-    //     assert_eq!(
-    //         VariantIter::new("0".to_string()).collect::<Vec<String>>(),
-    //         vec!["0"]
-    //     );
+    #[test]
+    fn test_part2() {
+        let input = fs::read_to_string("../inputs/day14-test2.txt").unwrap();
 
-    //     assert_eq!(
-    //         VariantIter::new("1".to_string()).collect::<Vec<String>>(),
-    //         vec!["1"]
-    //     );
-
-    //     assert_eq!(
-    //         VariantIter::new("X".to_string()).collect::<Vec<String>>(),
-    //         vec!["0", "1"]
-    //     );
-
-    //     assert_eq!(
-    //         VariantIter::new("X1".to_string()).collect::<Vec<String>>(),
-    //         vec!["01", "11"]
-    //     );
-
-    //     assert_eq!(
-    //         VariantIter::new("0X".to_string()).collect::<Vec<String>>(),
-    //         vec!["00", "01"]
-    //     );
-    // }
+        assert_eq!(execute(&input, set_value_v2), 208);
+    }
 }
