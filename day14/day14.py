@@ -16,13 +16,14 @@ class DecoderV2:
     memory: dict = field(default_factory=dict)
 
     def set_value(self, index, value):
+        index = apply_mask(self.mask.replace('0', 'X'), index)
         for variant in variants(self.mask):
-            inx = apply_mask2(variant, index)
+            inx = apply_mask(variant, index)
             self.memory[inx] = value
 
 
 def variants(s):
-    c = [s[0]] if s[0] != 'X' else ['0', '1']
+    c = ['X'] if s[0] != 'X' else ['0', '1']
     if not s[1:]:
         yield from c
     else:
@@ -37,18 +38,6 @@ def apply_mask(mask, value):
             continue
         if c == '0':
             value &= ~(1 << inx)
-        elif c == '1':
-            value |= (1 << inx)
-        else:
-            raise Exception(f"got {c}")
-    return value
-
-
-def apply_mask2(mask, value):
-    # TODO: this isn't right
-    for (inx, c) in enumerate(mask[::-1]):
-        if c in 'X0':
-            continue
         elif c == '1':
             value |= (1 << inx)
         else:
@@ -89,15 +78,10 @@ def part2(input):
 
 
 def main():
-    m = '000000000000000000000000000000X1001X'
-    i = 42
-    for v in variants(m):
-        print(apply_mask2(v, i))
-
-    with open('../inputs/day14-test.txt', 'r') as f:
+    with open('../inputs/day14.txt', 'r') as f:
         print(part1(f))
 
-    with open('../inputs/day14-test2.txt', 'r') as f:
+    with open('../inputs/day14.txt', 'r') as f:
         print(part2(f))
 
 
