@@ -11,6 +11,9 @@ fn find_nth(prelude: &Vec<usize>, n: usize) -> usize {
         .collect();
 
     while inx < n {
+        // if inx % 1000000 == 0 {
+        //     println!("{} {}", inx, current);
+        // }
         let new = match last_seen.get(&current) {
             Some(x) => inx - x,
             None => 0,
@@ -27,7 +30,8 @@ fn find_nth(prelude: &Vec<usize>, n: usize) -> usize {
 
 fn main() {
     let input = vec![2, 0, 1, 7, 4, 14, 18];
-    println!("{}", find_nth(&input, 2020));
+    // println!("{}", find_nth(&input, 2020));
+    println!("{}", find_nth(&input, 30000000));
 }
 
 mod test {
@@ -52,5 +56,11 @@ mod test {
     #[test]
     fn test_part2_1() {
         assert_eq!(find_nth(&vec![0, 3, 6], 30000000), 175594);
+        assert_eq!(find_nth(&vec![1, 3, 2], 30000000), 2578);
+        assert_eq!(find_nth(&vec![2, 1, 3], 30000000), 3544142);
+        assert_eq!(find_nth(&vec![1, 2, 3], 30000000), 261214);
+        assert_eq!(find_nth(&vec![2, 3, 1], 30000000), 6895259);
+        assert_eq!(find_nth(&vec![3, 2, 1], 30000000), 18);
+        assert_eq!(find_nth(&vec![3, 1, 2], 30000000), 362);
     }
 }
