@@ -83,9 +83,9 @@ impl Cube {
 
         Self {
             active: active,
-            xrange: (0, xmax as isize + 1),
-            yrange: (0, ymax as isize + 1),
-            zrange: (0, 1),
+            xrange: (0, xmax as isize),
+            yrange: (0, ymax as isize),
+            zrange: (0, 0),
         }
     }
 }
@@ -93,9 +93,13 @@ impl Cube {
 fn iterate(cube: Cube) -> Cube {
     let mut active = HashSet::new();
 
-    for x in (cube.xrange.0 - 1)..(cube.xrange.1 + 1) {
-        for y in (cube.yrange.0 - 1)..(cube.yrange.1 + 1) {
-            for z in (cube.zrange.0 - 1)..(cube.zrange.1 + 1) {
+    let mut xrange = cube.xrange;
+    let mut yrange = cube.yrange;
+    let mut zrange = cube.zrange;
+
+    for x in (cube.xrange.0 - 1)..=(cube.xrange.1 + 1) {
+        for y in (cube.yrange.0 - 1)..=(cube.yrange.1 + 1) {
+            for z in (cube.zrange.0 - 1)..=(cube.zrange.1 + 1) {
                 let is_active = cube.active.contains(&(x, y, z));
 
                 let active_count = adjacent((x, y, z))
@@ -104,6 +108,25 @@ fn iterate(cube: Cube) -> Cube {
 
                 if active_count == 3 || (is_active && active_count == 2) {
                     active.insert((x, y, z));
+
+                    if x < xrange.0 {
+                        xrange.0 = x
+                    }
+                    if x > xrange.1 {
+                        xrange.1 = x
+                    }
+                    if y < yrange.0 {
+                        yrange.0 = y
+                    }
+                    if y > yrange.1 {
+                        yrange.1 = y
+                    }
+                    if z < zrange.0 {
+                        zrange.0 = z
+                    }
+                    if z > zrange.1 {
+                        zrange.1 = z
+                    }
                 }
             }
         }
@@ -111,9 +134,9 @@ fn iterate(cube: Cube) -> Cube {
 
     Cube {
         active: active,
-        xrange: (cube.xrange.0 - 1, cube.xrange.1 + 1),
-        yrange: (cube.yrange.0 - 1, cube.yrange.1 + 1),
-        zrange: (cube.zrange.0 - 1, cube.zrange.1 + 1),
+        xrange: xrange,
+        yrange: yrange,
+        zrange: zrange,
     }
 }
 
@@ -144,5 +167,14 @@ mod test {
         //println!("{:?}", cube);
 
         assert_eq!(part1(cube), 112);
+    }
+
+    #[test]
+    fn test_part2() {
+        let input = fs::read_to_string("../inputs/day17-test.txt").unwrap();
+        let cube = Cube::parse(&input);
+        //println!("{:?}", cube);
+
+        assert_eq!(part1(cube), 848);
     }
 }
