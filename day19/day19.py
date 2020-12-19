@@ -13,22 +13,21 @@ class Validator:
     def __init__(self):
         self.rules = {}
 
-    def load(self, rule_strings):
-        for rule in rule_strings.splitlines():
-            id, match = rule.split(': ')
-            if '"' in match:
-                self.rules[id] = tag(match[1:-1])
-            elif "|" in match:
-                l, r = match.split(' | ')
-                self.rules[id] = self.either(
-                    self.seq(l.split(" ")),
-                    self.seq(r.split(" "))
-                )
-            elif " " in match:
-                self.rules[id] = self.seq(match.split(" "))
-            else:
-                self.rules[id] = self.match(match)
-            print(f"{id}: {match} -> {self.rules[id].__name__}")
+    def add_rule(self, rule_string):
+        id, match = rule_string.split(': ')
+        if '"' in match:
+            self.rules[id] = tag(match[1:-1])
+        elif "|" in match:
+            l, r = match.split(' | ')
+            self.rules[id] = self.either(
+                self.seq(l.split(" ")),
+                self.seq(r.split(" "))
+            )
+        elif " " in match:
+            self.rules[id] = self.seq(match.split(" "))
+        else:
+            self.rules[id] = self.match(match)
+        #print(f"{id}: {match} -> {self.rules[id].__name__}")
 
     def match(self, rule):
         def inner(s):
@@ -40,9 +39,9 @@ class Validator:
         def inner(s):
             t = s
             for r in rules:
-                t = self.match(r)(t)
-                if t is None:
+                if not t:
                     return None
+                t = self.match(r)(t)
             return t
         inner.__name__ = f"seq({rules})"
         return inner
@@ -59,19 +58,43 @@ class Validator:
     def validate(self, string):
         return self.match('0')(string) == ''
 
+    def rule11_recursive(self, string):
+        i = 1
+        while True:
+            s = self.seq(['42'] * i)(string)
+            if s is None:
+                return None
+            t = self.seq(['31'] * i)(s)
+            if t == '':
+                return t
+            i += 1
+
+    def validate_part2(self, string):
+        i = 1
+        while True:
+            s = self.seq(['42'] * i)(string)
+            if s is None:
+                return False
+            t = self.rule11_recursive(s)
+            if t == '':
+                return True
+            i += 1
+
 
 def main():
     with open("../inputs/day19.txt", 'r') as f:
         rules, messages = f.read().split("\n\n")
+
     validator = Validator()
-    validator.load(rules)
+    for rule in rules.splitlines():
+        validator.add_rule(rule)
 
     #print(validator.rules)
 
-    # for m in messages.splitlines():
-    #     print(f"{m} -> {validator.validate(m)}")
+    #for m in messages.splitlines():
+    #    print(f"{m} -> {validator.validate_part2(m)}")
 
-    print(sum(validator.validate(m) for m in messages.splitlines()))
+    print(sum(validator.validate_part2(m) for m in messages.splitlines()))
 
 
 if __name__ == '__main__':
