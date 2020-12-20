@@ -1,5 +1,7 @@
 from functools import reduce
 
+from PIL import Image, ImageDraw
+
 def get_edges(lines):
     edges = {lines[0], lines[-1], lines[0][::-1], lines[-1][::-1]}
     left = "".join(l[0] for l in lines)
@@ -8,6 +10,13 @@ def get_edges(lines):
     edges.update([right, right[::-1]])
     return edges
 
+def gen_image(lines):
+    im = Image.new('1', (100, 100))
+    draw = ImageDraw.Draw(im)
+    for y, line in enumerate(lines):
+        for x, c in enumerate(line):
+            draw.rectangle((10*x, 10*y, (10*(x+1), 10*(y+1))), fill=(c=='.'))
+    return im
 
 def main():
     with open("../inputs/day20.txt", 'r') as f:
@@ -21,7 +30,11 @@ def main():
 
         edge_map[id] = get_edges(tile[1:])
 
-    print(edge_map)
+        # im = gen_image(tile[1:])
+        # im.save(f"tiles/{id}.png")
+
+    # print(edge_map)
+    print(len(edge_map))
 
     shared_edges = {}
 
@@ -32,7 +45,9 @@ def main():
             if any(e in jges for e in edges):
                 shared_edges.setdefault(id, []).append(jd)
 
-    print(shared_edges)
+    # print(shared_edges)
+    # for (id, edges) in sorted(shared_edges.items(), key=lambda x: len(x[1])):
+    #     print(f"{id} -> {', '.join(str(e) for e in edges)}")
 
     assert all(len(e) <= 4 for e in shared_edges.values())
 
