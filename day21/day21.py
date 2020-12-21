@@ -2,6 +2,23 @@ from collections import Counter
 from functools import reduce
 
 
+def resolve(allergens):
+    all_set = False
+    while not all_set:
+        all_set = True
+        for k, v in allergens.items():
+            if isinstance(v, str):
+                continue
+            all_set = False
+            if len(v) == 1:
+                v = list(v)[0]
+                allergens[k] = v
+                for l, w in allergens.items():
+                    if l != k and v in w:
+                        w.remove(v)
+    return allergens
+
+
 def main():
     allergens = {}
     ingredients = Counter()
@@ -26,6 +43,12 @@ def main():
     # print(ingredients)
 
     print(sum(c for i, c in ingredients.items() if i not in allergenic))
+
+    # for k, v in allergens.items():
+    #     print(f"{k} -> {','.join(v)}")
+
+    allergens = resolve(allergens)
+    print(",".join(v for _, v in sorted(allergens.items(), key=lambda x: x[0])))
 
 
 
